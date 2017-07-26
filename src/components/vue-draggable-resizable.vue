@@ -1,5 +1,5 @@
 <template>
-  <div class="vdr" :class="{ draggable: draggable, resizable: resizable, active: active }" @mousedown="elmDown" @dblclick="fillParent" :style="style">
+  <div class="vdr" :class="{ draggable: draggable, resizable: resizable, active: active }" @mousedown="elmDown" :style="style">
     <div
       class="handle"
       v-if="resizable"
@@ -13,63 +13,14 @@
 </template>
 
 <script>
+import Vue from 'vue'
+
 export default {
   replace: true,
   name: 'vue-draggable-resizable',
   props: {
-    draggable: {
-      type: Boolean, default: true
-    },
-    resizable: {
-      type: Boolean, default: true
-    },
-    w: {
-      type: Number,
-      default: 200,
-      validator: function (val) {
-        return val > 0
-      }
-    },
-    h: {
-      type: Number,
-      default: 200,
-      validator: function (val) {
-        return val > 0
-      }
-    },
-    minw: {
-      type: Number,
-      default: 50,
-      validator: function (val) {
-        return val > 0
-      }
-    },
-    minh: {
-      type: Number,
-      default: 50,
-      validator: function (val) {
-        return val > 0
-      }
-    },
-    x: {
-      type: Number,
-      default: 0,
-      validator: function (val) {
-        return val >= 0
-      }
-    },
-    y: {
-      type: Number,
-      default: 0,
-      validator: function (val) {
-        return val >= 0
-      }
-    },
-    handles: {
-      type: Array,
-      default: function () {
-        return ['tl', 'tm', 'tr', 'mr', 'br', 'bm', 'bl', 'ml']
-      }
+    cfg: {
+      type: Object
     },
     axis: {
       type: String,
@@ -83,12 +34,6 @@ export default {
       default: function () {
         return [1, 1]
       }
-    },
-    parent: {
-      type: Boolean, default: false
-    },
-    maximize: {
-      type: Boolean, default: true
     }
   },
   created: function () {
@@ -113,31 +58,41 @@ export default {
     this.elmH = 0
   },
   mounted: function () {
+    let x = this.cfg.x * this.grid[0]
+    let y = this.cfg.y * this.grid[1]
+    let w = this.cfg.w * this.grid[0]
+    let h = this.cfg.h * this.grid[1]
+
     document.documentElement.addEventListener('mousemove', this.handleMove, true)
     document.documentElement.addEventListener('mousedown', this.deselect, true)
     document.documentElement.addEventListener('mouseup', this.handleUp, true)
 
     if (this.minw > this.w) this.width = this.minw
-
     if (this.minh > this.h) this.height = this.minh
 
     if (this.parent) {
-      const style = window.getComputedStyle(this.$el.parentNode, null)
+      // const style = window.getComputedStyle(this.$el.parentNode, null)
 
-      const parentW = parseInt(style.getPropertyValue('width'), 10)
-      const parentH = parseInt(style.getPropertyValue('height'), 10)
+      // const parentW = parseInt(style.getPropertyValue('width'), 10)
+      // const parentH = parseInt(style.getPropertyValue('height'), 10)
+      const node = this.$el.parentNode
+
+      let parentW = node.clientWidth
+      let parentH = node.clientHeight
 
       this.parentW = parentW
       this.parentH = parentH
 
-      if (this.w > this.parentW) this.width = parentW
-
-      if (this.h > this.parentH) this.height = parentH
-
-      if ((this.x + this.w) > this.parentW) this.width = parentW - this.x
-
-      if ((this.y + this.h) > this.parentH) this.height = parentH - this.y
+      if (w > this.parentW) this.width = parentW
+      if (h > this.parentH) this.height = parentH
+      if ((x + w) > this.parentW) this.width = parentW - x
+      if ((y + h) > this.parentH) this.height = parentH - y
     }
+
+    this.top = y
+    this.left = x
+    this.width = w
+    this.height = h
 
     this.$emit('resizing', this.left, this.top, this.width, this.height)
   },
@@ -148,10 +103,15 @@ export default {
   },
   data: function () {
     return {
-      top: this.y,
-      left: this.x,
-      width: this.w,
-      height: this.h,
+      draggable: true,
+      resizable: true,
+      handles: ['tl', 'tm', 'tr', 'mr', 'br', 'bm', 'bl', 'ml'],
+      parent: true,
+
+      top: 0,
+      left: 0,
+      width: 0,
+      height: 0,
       resizing: false,
       dragging: false,
       active: false,
@@ -198,62 +158,6 @@ export default {
       if (e.preventDefault) e.preventDefault()
 
       this.resizing = true
-    },
-    fillParent: function (e) {
-      if (!this.parent || !this.resizable || !this.maximize) return
-
-      let done = false
-
-      const animate = () => {
-        if (!done) {
-          window.requestAnimationFrame(animate)
-        }
-
-        if (this.axis === 'x') {
-          if (
-            this.width === this.parentW && this.left === this.parentX
-          ) done = true
-        } else if (this.axis === 'y') {
-          if (
-            this.height === this.parentH && this.top === this.parentY
-          ) done = true
-        } else if (this.axis === 'both') {
-          if (
-            this.width === this.parentW &&
-            this.height === this.parentH &&
-            this.top === this.parentY &&
-            this.left === this.parentX
-          ) done = true
-        }
-
-        if (this.axis === 'x' || this.axis === 'both') {
-          if (this.width < this.parentW) {
-            this.width++
-            this.elmW++
-          }
-
-          if (this.left > this.parentX) {
-            this.left--
-            this.elmX--
-          }
-        }
-
-        if (this.axis === 'y' || this.axis === 'both') {
-          if (this.height < this.parentH) {
-            this.height++
-            this.elmH++
-          }
-
-          if (this.top > this.parentY) {
-            this.top--
-            this.elmY--
-          }
-        }
-
-        this.$emit('resizing', this.left, this.top, this.width, this.height)
-      }
-
-      window.requestAnimationFrame(animate)
     },
     handleMove: function (e) {
       if (e.preventDefault) e.preventDefault()
@@ -305,7 +209,7 @@ export default {
         this.width = (Math.round(this.elmW / this.grid[0]) * this.grid[0])
         this.height = (Math.round(this.elmH / this.grid[1]) * this.grid[1])
 
-        this.$emit('resizing', this.left, this.top, this.width, this.height)
+        // this.$emit('resizing', this.left, this.top, this.width, this.height)
       } else if (this.dragging) {
         if (this.elmX + dX < this.parentX) this.mouseOffX = (dX - (diffX = this.parentX - this.elmX))
         else if (this.elmX + this.elmW + dX > this.parentW) this.mouseOffX = (dX - (diffX = this.parentW - this.elmX - this.elmW))
@@ -323,18 +227,26 @@ export default {
           this.top = (Math.round(this.elmY / this.grid[1]) * this.grid[1])
         }
 
-        this.$emit('dragging', this.left, this.top)
+        // this.$emit('dragging', this.left, this.top)
       }
     },
     handleUp: function (e) {
       this.handle = null
       if (this.resizing) {
         this.resizing = false
-        this.$emit('resizestop', this.left, this.top, this.width, this.height)
+        // this.$emit('resizestop', this.left, this.top, this.width, this.height)
+        let c = this.cfg
+        c.x = this.cx
+        c.y = this.cy
+        c.w = this.cw
+        c.h = this.ch
       }
       if (this.dragging) {
         this.dragging = false
-        this.$emit('dragstop', this.left, this.top)
+        // this.$emit('dragstop', this.left, this.top)
+        let c = this.cfg
+        c.x = this.cx
+        c.y = this.cy
       }
       this.opacity = 1
 
@@ -343,6 +255,12 @@ export default {
     }
   },
   computed: {
+    cx () { return Math.round(this.left / this.grid[0]) },
+    cy () { return Math.round(this.top / this.grid[1]) },
+    cw () { return Math.round(this.width / this.grid[0]) },
+    ch () { return Math.round(this.height / this.grid[1]) },
+    minw () { return this.grid[0] },
+    minh () { return this.grid[1] },
     style: function () {
       return {
         top: this.top + 'px',

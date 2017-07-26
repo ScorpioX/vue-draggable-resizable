@@ -1,10 +1,11 @@
 <template>
   <div id="app">
-    <div style="height: 500px; width: 500px; margin: 20px; border: 1px solid red; position: relative;">
-      <vue-draggable-resizable :x="50" :y="50" :w="400" :h="400" :parent="true" @resizing="onResize" @dragging="onDrag">
+    <div id="xx" style="height: 500px; margin: 20px; border: 1px solid red; position: relative;">
+      <vue-draggable-resizable :cfg="cfg" :grid="grid">
         <p>Component</p>
       </vue-draggable-resizable>
     </div>
+    <div>{{cfg}}</div>
   </div>
 </template>
 
@@ -15,6 +16,17 @@ export default {
   name: 'app',
   components: {
     'vue-draggable-resizable': VueDraggableResizable
+  },
+  data () {
+    return {
+      cfg: {
+        x: 3,
+        y: 6,
+        w: 4,
+        h: 3
+      },
+      grid: [ 20, 20 ]
+    }
   }
 }
 </script>
@@ -23,4 +35,6 @@ export default {
   .active {
     border: 1px dashed black;
   }
+  .vdr { background-color: yellow }
+  #xx { width: 500px; }
 </style>

@@ -1,6 +1,8 @@
 <p align="center"><img src="https://rawgit.com/mauricius/vue-draggable-resizable/master/docs/resources/logo.png" alt="logo"></p>
 <h1 align="center">VueDraggableResizable</h1>
 
+> Forked and revised from https://mauricius.github.io/vue-draggable-resizable/
+
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 
 > Vue2 Component for draggable and resizable elements.
