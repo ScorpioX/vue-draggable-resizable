@@ -2,10 +2,8 @@
   <div class="vdr" :class="{ draggable: draggable, resizable: resizable, active: active }" @mousedown="elmDown" :style="style">
     <div
       class="handle"
-      v-if="resizable"
       v-for="handle in handles"
       :class="'handle-' + handle"
-      :style="{ display: active ? 'block' : 'none'}"
       @mousedown.stop.prevent="handleDown(handle, $event)"
     ></div>
     <slot></slot>
@@ -94,7 +92,7 @@ export default {
     this.width = w
     this.height = h
 
-    this.$emit('resizing', this.left, this.top, this.width, this.height)
+    // this.$emit('resizing')
   },
   beforeDestroy: function () {
     document.documentElement.removeEventListener('mousemove', this.handleMove, true)
@@ -280,6 +278,8 @@ export default {
     position: absolute;
     box-sizing: border-box;
   }
+  .vdr .handle { display: none }
+  .vdr.active .handle { display: block }
   .draggable:hover {
     cursor: move;
   }
