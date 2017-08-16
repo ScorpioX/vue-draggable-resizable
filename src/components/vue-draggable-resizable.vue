@@ -13,6 +13,8 @@
 <script>
 import Vue from 'vue'
 
+const ele = document.documentElement
+
 export default {
   replace: true,
   name: 'vue-draggable-resizable',
@@ -61,9 +63,9 @@ export default {
     let w = this.cfg.w * this.grid[0]
     let h = this.cfg.h * this.grid[1]
 
-    document.documentElement.addEventListener('mousemove', this.handleMove, true)
-    document.documentElement.addEventListener('mousedown', this.deselect, true)
-    document.documentElement.addEventListener('mouseup', this.handleUp, true)
+    ele.addEventListener('mousemove', this.handleMove, true)
+    ele.addEventListener('mousedown', this.deselect, true)
+    ele.addEventListener('mouseup', this.handleUp, true)
 
     if (this.minw > this.w) this.width = this.minw
     if (this.minh > this.h) this.height = this.minh
@@ -95,9 +97,9 @@ export default {
     // this.$emit('resizing')
   },
   beforeDestroy: function () {
-    document.documentElement.removeEventListener('mousemove', this.handleMove, true)
-    document.documentElement.removeEventListener('mousedown', this.deselect, true)
-    document.documentElement.removeEventListener('mouseup', this.handleUp, true)
+    ele.removeEventListener('mousemove', this.handleMove, true)
+    ele.removeEventListener('mousedown', this.deselect, true)
+    ele.removeEventListener('mouseup', this.handleUp, true)
   },
   data: function () {
     return {
@@ -116,6 +118,19 @@ export default {
       opacity: 1,
       handle: null,
       zIndex: 1
+    }
+  },
+  watch: {
+    grid (v) {
+      let c = this.cfg
+      this.top = c.y * v[1]
+      this.left = c.x * v[0]
+      this.width = c.w * v[0]
+      this.height = c.h * v[1]
+
+      let node = this.$el.parentNode
+      this.parentW = node.clientWidth
+      this.parentH = node.clientHeight
     }
   },
   methods: {
@@ -160,8 +175,8 @@ export default {
     handleMove: function (e) {
       if (e.preventDefault) e.preventDefault()
 
-      this.mouseX = e.pageX || e.clientX + document.documentElement.scrollLeft
-      this.mouseY = e.pageY || e.clientY + document.documentElement.scrollTop
+      this.mouseX = e.pageX || e.clientX + ele.scrollLeft
+      this.mouseY = e.pageY || e.clientY + ele.scrollTop
 
       let diffX = this.mouseX - this.lastMouseX + this.mouseOffX
       let diffY = this.mouseY - this.lastMouseY + this.mouseOffY
